@@ -236,8 +236,24 @@ class ClothifyApp {
 
     resizeCanvasToImage() {
         if (this.clothingImage) {
-            const maxWidth = 600;
-            const maxHeight = 500;
+            const container = this.canvas.parentElement;
+            const containerWidth = container.clientWidth;
+            const containerHeight = container.clientHeight;
+            
+            // Définir les dimensions maximales selon l'écran
+            let maxWidth, maxHeight;
+            
+            if (window.innerWidth < 640) { // Mobile
+                maxWidth = Math.min(containerWidth - 20, 350);
+                maxHeight = Math.min(containerHeight - 20, 400);
+            } else if (window.innerWidth < 1024) { // Tablet
+                maxWidth = Math.min(containerWidth - 20, 500);
+                maxHeight = Math.min(containerHeight - 20, 600);
+            } else { // Desktop
+                maxWidth = 600;
+                maxHeight = 500;
+            }
+            
             let width = this.clothingImage.width;
             let height = this.clothingImage.height;
 
@@ -249,6 +265,8 @@ class ClothifyApp {
 
             this.canvas.width = width;
             this.canvas.height = height;
+            this.canvas.style.maxWidth = '100%';
+            this.canvas.style.height = 'auto';
         }
     }
 
@@ -307,6 +325,46 @@ class ClothifyApp {
                 width: 100,
                 height: 100,
                 opacity: 1,
+                flipH: false,
+                flipV: false
+            };
+            
+            this.patterns.push(pattern);
+            this.selectedPattern = pattern;
+            this.redraw();
+            this.saveHistory();
+            this.updateControls();
+            this.updateButtons();
+        };
+        
+        img.onerror = () => {
+            // Fallback pour les images qui ne se chargent pas
+            const canvas = document.createElement('canvas');
+            canvas.width = 100;
+            canvas.height = 100;
+            const ctx = canvas.getContext('2d');
+            
+            // Créer un motif par défaut
+            ctx.fillStyle = this.getRandomColor();
+            ctx.fillRect(0, 0, 100, 100);
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(100, 100);
+            ctx.moveTo(100, 0);
+            ctx.lineTo(0, 100);
+            ctx.stroke();
+            
+            const pattern = {
+                id: this.patternIdCounter++,
+                name: name,
+                image: canvas,
+                x: this.canvas.width / 2 - 50,
+                y: this.canvas.height / 2 - 50,
+                width: 100,
+                height: 100,
+                opacity: 1,
                 rotation: 0,
                 flipH: false,
                 flipV: false
@@ -323,16 +381,76 @@ class ClothifyApp {
         img.src = url;
     }
 
-    getRandomColor() {
-        const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8'];
-        return colors[Math.floor(Math.random() * colors.length)];
+    handleMouseUp() {
+        if (this.isDragging) {
+            this.isDragging = false;
+            this.saveHistory();
+        }
+    }
+
+    handleTouchStart(event) {
+        event.preventDefault();
+        const touch = event.touches[0];
+        const rect = this.canvas.getBoundingClientRect();
+        const x = touch.clientX - rect.left;
+        const y = touch.clientY - rect.top;
+        
+        // Ajuster les coordonnées pour le canvas redimensionné
+        const scaleX = this.canvas.width / rect.width;
+        const scaleY = this.canvas.height / rect.height;
+        const canvasX = x * scaleX;
+        const canvasY = y * scaleY;
+        
+        this.handleMouseDownAt(canvasX, canvasY);
+    }
+
+    handleTouchMove(event) {
+        event.preventDefault();
+        const touch = event.touches[0];
+        const rect = this.canvas.getBoundingClientRect();
+        const x = touch.clientX - rect.left;
+        const y = touch.clientY - rect.top;
+        
+        // Ajuster les coordonnées pour le canvas redimensionné
+        const scaleX = this.canvas.width / rect.width;
+        const scaleY = this.canvas.height / rect.height;
+        const canvasX = x * scaleX;
+        const canvasY = y * scaleY;
+        
+        this.handleMouseMoveAt(canvasX, canvasY);
     }
 
     handleMouseDown(event) {
         const rect = this.canvas.getBoundingClientRect();
         const x = event.clientX - rect.left;
         const y = event.clientY - rect.top;
+        
+        // Ajuster les coordonnées pour le canvas redimensionné
+        const scaleX = this.canvas.width / rect.width;
+        const scaleY = this.canvas.height / rect.height;
+        const canvasX = x * scaleX;
+        const canvasY = y * scaleY;
+        
+        this.handleMouseDownAt(canvasX, canvasY);
+    }
 
+    handleMouseMove(event) {
+        if (this.isDragging && this.selectedPattern) {
+            const rect = this.canvas.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+            
+            // Ajuster les coordonnées pour le canvas redimensionné
+            const scaleX = this.canvas.width / rect.width;
+            const scaleY = this.canvas.height / rect.height;
+            const canvasX = x * scaleX;
+            const canvasY = y * scaleY;
+            
+            this.handleMouseMoveAt(canvasX, canvasY);
+        }
+    }
+
+    handleMouseDownAt(x, y) {
         // Vérifier si on clique sur un motif
         for (let i = this.patterns.length - 1; i >= 0; i--) {
             const pattern = this.patterns[i];
@@ -353,44 +471,17 @@ class ClothifyApp {
         }
     }
 
-    handleMouseMove(event) {
+    handleMouseMoveAt(x, y) {
         if (this.isDragging && this.selectedPattern) {
-            const rect = this.canvas.getBoundingClientRect();
-            const x = event.clientX - rect.left;
-            const y = event.clientY - rect.top;
-            
             this.selectedPattern.x = x - this.dragOffset.x;
             this.selectedPattern.y = y - this.dragOffset.y;
             
+            // Limiter les positions aux bords du canvas
+            this.selectedPattern.x = Math.max(0, Math.min(this.canvas.width - this.selectedPattern.width, this.selectedPattern.x));
+            this.selectedPattern.y = Math.max(0, Math.min(this.canvas.height - this.selectedPattern.height, this.selectedPattern.y));
+            
             this.redraw();
         }
-    }
-
-    handleMouseUp() {
-        if (this.isDragging) {
-            this.isDragging = false;
-            this.saveHistory();
-        }
-    }
-
-    handleTouchStart(event) {
-        event.preventDefault();
-        const touch = event.touches[0];
-        const mouseEvent = new MouseEvent('mousedown', {
-            clientX: touch.clientX,
-            clientY: touch.clientY
-        });
-        this.canvas.dispatchEvent(mouseEvent);
-    }
-
-    handleTouchMove(event) {
-        event.preventDefault();
-        const touch = event.touches[0];
-        const mouseEvent = new MouseEvent('mousemove', {
-            clientX: touch.clientX,
-            clientY: touch.clientY
-        });
-        this.canvas.dispatchEvent(mouseEvent);
     }
 
     isPointInPattern(x, y, pattern) {
@@ -600,3 +691,5 @@ class ClothifyApp {
 document.addEventListener('DOMContentLoaded', () => {
     new ClothifyApp();
 });
+
+

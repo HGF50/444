@@ -5,6 +5,9 @@ class CustomShirtApp {
         this.currentShirtColor = 'white';
         this.canvas = null;
         this.ctx = null;
+        this.currentProductId = null;
+        this.currentProductName = null;
+        this.currentProductPrice = null;
         this.init();
     }
 
@@ -94,40 +97,67 @@ class CustomShirtApp {
         // Clear canvas
         ctx.clearRect(0, 0, width, height);
 
-        // Draw shirt shape
+        // Draw shirt shape with better proportions
         ctx.fillStyle = this.currentShirtColor;
         ctx.beginPath();
         
-        // T-shirt shape
-        ctx.moveTo(width * 0.2, height * 0.1);
-        ctx.lineTo(width * 0.35, height * 0.05);
-        ctx.lineTo(width * 0.4, height * 0.15);
-        ctx.lineTo(width * 0.6, height * 0.15);
-        ctx.lineTo(width * 0.65, height * 0.05);
-        ctx.lineTo(width * 0.8, height * 0.1);
-        ctx.lineTo(width * 0.85, height * 0.3);
-        ctx.lineTo(width * 0.8, height * 0.95);
-        ctx.lineTo(width * 0.2, height * 0.95);
-        ctx.lineTo(width * 0.15, height * 0.3);
+        // T-shirt shape with more realistic proportions
+        const centerX = width / 2;
+        const shirtWidth = 180;
+        const shirtHeight = 220;
+        const startX = centerX - shirtWidth / 2;
+        const startY = 40;
+        
+        // Main body
+        ctx.rect(startX, startY + 40, shirtWidth, shirtHeight);
+        ctx.fill();
+        
+        // Sleeves
+        ctx.beginPath();
+        // Left sleeve
+        ctx.moveTo(startX, startY + 40);
+        ctx.lineTo(startX - 20, startY + 20);
+        ctx.lineTo(startX - 10, startY + 60);
+        ctx.lineTo(startX, startY + 80);
         ctx.closePath();
         ctx.fill();
+        
+        // Right sleeve
+        ctx.beginPath();
+        ctx.moveTo(startX + shirtWidth, startY + 40);
+        ctx.lineTo(startX + shirtWidth + 20, startY + 20);
+        ctx.lineTo(startX + shirtWidth + 10, startY + 60);
+        ctx.lineTo(startX + shirtWidth, startY + 80);
+        ctx.closePath();
+        ctx.fill();
+        
+        // Neck
+        ctx.beginPath();
+        ctx.ellipse(centerX, startY + 30, 30, 20, 0, 0, 2 * Math.PI);
+        ctx.fillStyle = 'white';
+        ctx.fill();
+        ctx.strokeStyle = '#ddd';
+        ctx.lineWidth = 1;
+        ctx.stroke();
 
-        // Add border
+        // Add border to main shirt
         ctx.strokeStyle = '#ddd';
         ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.rect(startX, startY + 40, shirtWidth, shirtHeight);
         ctx.stroke();
     }
 
     loadProducts() {
         const products = [
-            { id: 1, name: 'T-shirt Classic', price: 19.99, category: 'tshirts', image: 'https://picsum.photos/seed/tshirt1/300/300' },
-            { id: 2, name: 'T-shirt Premium', price: 24.99, category: 'tshirts', image: 'https://picsum.photos/seed/tshirt2/300/300' },
-            { id: 3, name: 'Sweat à Capuche', price: 39.99, category: 'hoodies', image: 'https://picsum.photos/seed/hoodie1/300/300' },
-            { id: 4, name: 'Sweat Zip', price: 44.99, category: 'hoodies', image: 'https://picsum.photos/seed/hoodie2/300/300' },
-            { id: 5, name: 'Casquette', price: 14.99, category: 'accessories', image: 'https://picsum.photos/seed/cap1/300/300' },
-            { id: 6, name: 'Sac Tote', price: 12.99, category: 'accessories', image: 'https://picsum.photos/seed/bag1/300/300' },
-            { id: 7, name: 'T-shirt Sport', price: 22.99, category: 'tshirts', image: 'https://picsum.photos/seed/tshirt3/300/300' },
-            { id: 8, name: 'Sweat Oversize', price: 49.99, category: 'hoodies', image: 'https://picsum.photos/seed/hoodie3/300/300' }
+            { id: 1, name: 'T-shirt Classic', price: 19.99, category: 'tshirts', image: 'https://picsum.photos/seed/tshirt1/300/300', customizable: true },
+            { id: 2, name: 'T-shirt Premium', price: 24.99, category: 'tshirts', image: 'https://picsum.photos/seed/tshirt2/300/300', customizable: true },
+            { id: 3, name: 'Sweat à Capuche', price: 39.99, category: 'hoodies', image: 'https://picsum.photos/seed/hoodie1/300/300', customizable: true },
+            { id: 4, name: 'Sweat Zip', price: 44.99, category: 'hoodies', image: 'https://picsum.photos/seed/hoodie2/300/300', customizable: true },
+            { id: 5, name: 'Casquette', price: 14.99, category: 'accessories', image: 'https://picsum.photos/seed/cap1/300/300', customizable: false },
+            { id: 6, name: 'Sac Tote', price: 12.99, category: 'accessories', image: 'https://picsum.photos/seed/bag1/300/300', customizable: false },
+            { id: 7, name: 'T-shirt Sport', price: 22.99, category: 'tshirts', image: 'https://picsum.photos/seed/tshirt3/300/300', customizable: true },
+            { id: 8, name: 'Sweat Oversize', price: 49.99, category: 'hoodies', image: 'https://picsum.photos/seed/hoodie3/300/300', customizable: true }
         ];
 
         this.renderProducts(products);
@@ -141,8 +171,9 @@ class CustomShirtApp {
             const card = document.createElement('div');
             card.className = 'product-card bg-white rounded-lg shadow-md overflow-hidden';
             card.innerHTML = `
-                <div class="aspect-square overflow-hidden">
+                <div class="aspect-square overflow-hidden relative">
                     <img src="${product.image}" alt="${product.name}" class="w-full h-full object-cover">
+                    ${product.customizable ? '<div class="absolute top-2 right-2 bg-indigo-600 text-white px-2 py-1 rounded-full text-xs font-semibold">Personnalisable</div>' : ''}
                 </div>
                 <div class="p-4">
                     <h3 class="font-semibold text-lg mb-2">${product.name}</h3>
@@ -151,10 +182,11 @@ class CustomShirtApp {
                             class="w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition">
                         <i class="fas fa-shopping-cart mr-2"></i>Ajouter au panier
                     </button>
-                    <button onclick="app.customizeProduct(${product.id})" 
+                    ${product.customizable ? `
+                    <button onclick="app.customizeProduct(${product.id}, '${product.name}', ${product.price})" 
                             class="w-full mt-2 border border-indigo-600 text-indigo-600 py-2 rounded-lg hover:bg-indigo-50 transition">
                         <i class="fas fa-paint-brush mr-2"></i>Personnaliser
-                    </button>
+                    </button>` : ''}
                 </div>
             `;
             grid.appendChild(card);
@@ -163,14 +195,14 @@ class CustomShirtApp {
 
     filterProducts(category) {
         const allProducts = [
-            { id: 1, name: 'T-shirt Classic', price: 19.99, category: 'tshirts', image: 'https://picsum.photos/seed/tshirt1/300/300' },
-            { id: 2, name: 'T-shirt Premium', price: 24.99, category: 'tshirts', image: 'https://picsum.photos/seed/tshirt2/300/300' },
-            { id: 3, name: 'Sweat à Capuche', price: 39.99, category: 'hoodies', image: 'https://picsum.photos/seed/hoodie1/300/300' },
-            { id: 4, name: 'Sweat Zip', price: 44.99, category: 'hoodies', image: 'https://picsum.photos/seed/hoodie2/300/300' },
-            { id: 5, name: 'Casquette', price: 14.99, category: 'accessories', image: 'https://picsum.photos/seed/cap1/300/300' },
-            { id: 6, name: 'Sac Tote', price: 12.99, category: 'accessories', image: 'https://picsum.photos/seed/bag1/300/300' },
-            { id: 7, name: 'T-shirt Sport', price: 22.99, category: 'tshirts', image: 'https://picsum.photos/seed/tshirt3/300/300' },
-            { id: 8, name: 'Sweat Oversize', price: 49.99, category: 'hoodies', image: 'https://picsum.photos/seed/hoodie3/300/300' }
+            { id: 1, name: 'T-shirt Classic', price: 19.99, category: 'tshirts', image: 'https://picsum.photos/seed/tshirt1/300/300', customizable: true },
+            { id: 2, name: 'T-shirt Premium', price: 24.99, category: 'tshirts', image: 'https://picsum.photos/seed/tshirt2/300/300', customizable: true },
+            { id: 3, name: 'Sweat à Capuche', price: 39.99, category: 'hoodies', image: 'https://picsum.photos/seed/hoodie1/300/300', customizable: true },
+            { id: 4, name: 'Sweat Zip', price: 44.99, category: 'hoodies', image: 'https://picsum.photos/seed/hoodie2/300/300', customizable: true },
+            { id: 5, name: 'Casquette', price: 14.99, category: 'accessories', image: 'https://picsum.photos/seed/cap1/300/300', customizable: false },
+            { id: 6, name: 'Sac Tote', price: 12.99, category: 'accessories', image: 'https://picsum.photos/seed/bag1/300/300', customizable: false },
+            { id: 7, name: 'T-shirt Sport', price: 22.99, category: 'tshirts', image: 'https://picsum.photos/seed/tshirt3/300/300', customizable: true },
+            { id: 8, name: 'Sweat Oversize', price: 49.99, category: 'hoodies', image: 'https://picsum.photos/seed/hoodie3/300/300', customizable: true }
         ];
 
         const filtered = category === 'all' 
@@ -195,13 +227,25 @@ class CustomShirtApp {
         this.showNotification('Produit ajouté au panier!');
     }
 
-    customizeProduct(productId) {
+    customizeProduct(productId, productName, productPrice) {
+        this.currentProductId = productId;
+        this.currentProductName = productName;
+        this.currentProductPrice = productPrice;
         this.openDesigner();
     }
 
     openDesigner() {
         document.getElementById('designerModal').classList.remove('hidden');
         document.body.style.overflow = 'hidden';
+        
+        // Update designer with current product info
+        if (this.currentProductName) {
+            document.getElementById('designerProductName').textContent = `Personnalisation: ${this.currentProductName}`;
+            document.getElementById('basePrice').textContent = `${this.currentProductPrice.toFixed(2)}€`;
+            document.getElementById('totalPrice').textContent = `${(this.currentProductPrice + 5).toFixed(2)}€`;
+        }
+        
+        this.clearCanvas();
     }
 
     closeDesigner() {
@@ -219,12 +263,33 @@ class CustomShirtApp {
             return;
         }
 
-        this.ctx.fillStyle = color;
-        this.ctx.font = `${fontSize}px Arial`;
+        // Ensure text is visible on the shirt
+        const adjustedColor = this.isColorTooSimilar(color, this.currentShirtColor) ? 
+            (this.currentShirtColor === 'black' || this.currentShirtColor === 'blue' ? '#ffffff' : '#000000') : color;
+
+        this.ctx.fillStyle = adjustedColor;
+        this.ctx.font = `bold ${fontSize}px Arial`;
         this.ctx.textAlign = 'center';
         this.ctx.fillText(text, this.canvas.width / 2, this.canvas.height / 2);
 
         document.getElementById('textInput').value = '';
+    }
+
+    isColorTooSimilar(color1, color2) {
+        // Simple color contrast check
+        const colors = {
+            'black': '#000000',
+            'white': '#ffffff',
+            'red': '#ff0000',
+            'blue': '#0000ff',
+            'green': '#008000',
+            'gray': '#808080'
+        };
+        
+        const hex1 = colors[color1] || color1;
+        const hex2 = colors[color2] || color2;
+        
+        return hex1 === hex2;
     }
 
     setShirtColor(color) {
@@ -236,11 +301,73 @@ class CustomShirtApp {
         this.drawShirt();
     }
 
+    applyTemplate(templateType) {
+        this.clearCanvas();
+        
+        switch(templateType) {
+            case 'text':
+                // Add white text for dark shirts, black for light shirts
+                const textColor = this.currentShirtColor === 'black' || this.currentShirtColor === 'blue' ? '#ffffff' : '#000000';
+                this.drawText('CUSTOM', textColor, 32, this.canvas.height / 2 - 20);
+                this.drawText('DESIGN', textColor, 24, this.canvas.height / 2 + 20);
+                break;
+            case 'logo':
+                // Gold star with text
+                this.drawStar('#FFD700', this.canvas.width / 2, this.canvas.height / 2 - 20);
+                const logoTextColor = this.currentShirtColor === 'black' || this.currentShirtColor === 'blue' ? '#FFD700' : '#B8860B';
+                this.drawText('PREMIUM', logoTextColor, 20, this.canvas.height / 2 + 30);
+                break;
+            case 'sport':
+                // Athletic style
+                const sportColor = this.currentShirtColor === 'black' || this.currentShirtColor === 'blue' ? '#ffffff' : '#FF0000';
+                this.drawText('ATHLETIC', sportColor, 28, this.canvas.height / 2 - 20);
+                this.drawText('PERFORMANCE', sportColor, 16, this.canvas.height / 2 + 20);
+                break;
+            case 'vintage':
+                // Vintage style
+                const vintageColor = this.currentShirtColor === 'black' || this.currentShirtColor === 'blue' ? '#8B4513' : '#654321';
+                this.drawText('VINTAGE', vintageColor, 24, this.canvas.height / 2 - 20);
+                this.drawText('SINCE 2024', vintageColor, 14, this.canvas.height / 2 + 20);
+                break;
+        }
+    }
+
+    drawText(text, color, size, yPosition) {
+        this.ctx.fillStyle = color;
+        this.ctx.font = `bold ${size}px Arial`;
+        this.ctx.textAlign = 'center';
+        this.ctx.fillText(text, this.canvas.width / 2, yPosition);
+    }
+
+    drawStar(color, x, y) {
+        this.ctx.fillStyle = color;
+        this.ctx.beginPath();
+        for (let i = 0; i < 5; i++) {
+            const angle = (Math.PI * 2 * i) / 5 - Math.PI / 2;
+            const outerX = x + Math.cos(angle) * 20;
+            const outerY = y + Math.sin(angle) * 20;
+            
+            if (i === 0) {
+                this.ctx.moveTo(outerX, outerY);
+            } else {
+                this.ctx.lineTo(outerX, outerY);
+            }
+            
+            const innerAngle = angle + Math.PI / 5;
+            const innerX = x + Math.cos(innerAngle) * 10;
+            const innerY = y + Math.sin(innerAngle) * 10;
+            this.ctx.lineTo(innerX, innerY);
+        }
+        this.ctx.closePath();
+        this.ctx.fill();
+    }
+
     addToCart() {
         const item = {
             id: Date.now(),
-            name: 'T-shirt Personnalisé',
-            price: 29.99,
+            productId: this.currentProductId,
+            name: `${this.currentProductName} Personnalisé`,
+            price: this.currentProductPrice + 5, // Extra cost for customization
             quantity: 1,
             custom: true,
             design: this.canvas.toDataURL()
@@ -248,7 +375,7 @@ class CustomShirtApp {
 
         this.cart.push(item);
         this.updateCartCount();
-        this.showNotification('Design personnalisé ajouté au panier!');
+        this.showNotification(`${this.currentProductName} personnalisé ajouté au panier!`);
         this.closeDesigner();
     }
 

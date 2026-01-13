@@ -322,7 +322,10 @@ window.addEventListener('resize', () => {
     // Add any responsive logic here
 });
 
-// PWA Support
+// PWA Support and Install Prompt
+let deferredPrompt;
+let installButton;
+
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('/sw.js')
@@ -334,3 +337,163 @@ if ('serviceWorker' in navigator) {
             });
     });
 }
+
+// Listen for install prompt
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    showInstallButton();
+});
+
+// Show install button
+function showInstallButton() {
+    // Show floating button
+    if (!installButton) {
+        installButton = document.createElement('button');
+        installButton.innerHTML = '<i class="fas fa-download mr-2"></i>Installer l\'application';
+        installButton.className = 'fixed bottom-4 left-4 bg-green-600 text-white px-4 py-3 rounded-lg shadow-lg hover:bg-green-700 transition z-50 flex items-center';
+        installButton.onclick = installApp;
+        document.body.appendChild(installButton);
+    }
+    
+    // Show header button
+    const headerInstallBtn = document.getElementById('installPWA');
+    if (headerInstallBtn) {
+        headerInstallBtn.classList.remove('hidden');
+        headerInstallBtn.onclick = installApp;
+    }
+}
+
+// Install the PWA
+async function installApp() {
+    if (!deferredPrompt) {
+        // Fallback for browsers that don't support beforeinstallprompt
+        showInstallInstructions();
+        return;
+    }
+
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    
+    if (outcome === 'accepted') {
+        console.log('User accepted the install prompt');
+        if (installButton) {
+            installButton.remove();
+            installButton = null;
+        }
+        // Hide header button too
+        const headerInstallBtn = document.getElementById('installPWA');
+        if (headerInstallBtn) {
+            headerInstallBtn.classList.add('hidden');
+        }
+        showInstallSuccess();
+    } else {
+        console.log('User dismissed the install prompt');
+    }
+    
+    deferredPrompt = null;
+}
+
+// Show install instructions for unsupported browsers
+function showInstallInstructions() {
+    const userAgent = navigator.userAgent.toLowerCase();
+    let instructions = '';
+    
+    if (/android/.test(userAgent)) {
+        instructions = `
+            <div class="text-left space-y-3">
+                <p><strong>Pour installer sur Android :</strong></p>
+                <ol class="list-decimal list-inside space-y-2 text-sm">
+                    <li>Ouvrez dans Chrome</li>
+                    <li>Tapez sur les 3 points ⋮ en haut à droite</li>
+                    <li>Sélectionnez "Installer l'application" ou "Ajouter à l'écran d'accueil"</li>
+                    <li>Confirmez l'installation</li>
+                </ol>
+            </div>
+        `;
+    } else if (/iphone|ipad|ipod/.test(userAgent)) {
+        instructions = `
+            <div class="text-left space-y-3">
+                <p><strong>Pour installer sur iOS :</strong></p>
+                <ol class="list-decimal list-inside space-y-2 text-sm">
+                    <li>Ouvrez dans Safari</li>
+                    <li>Tapez sur l'icône Partager <i class="fas fa-share-square"></i> en bas</li>
+                    <li>Faites défiler et tapez "Sur l'écran d'accueil"</li>
+                    <li>Tapez "Ajouter" en haut à droite</li>
+                </ol>
+            </div>
+        `;
+    } else {
+        instructions = `
+            <div class="text-left space-y-3">
+                <p><strong>Pour installer l'application :</strong></p>
+                <ol class="list-decimal list-inside space-y-2 text-sm">
+                    <li>Cherchez "Installer" ou "Ajouter à l'écran d'accueil" dans le menu du navigateur</li>
+                    <li>Suivez les instructions pour terminer l'installation</li>
+                </ol>
+            </div>
+        `;
+    }
+    
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4';
+    modal.innerHTML = `
+        <div class="bg-white rounded-lg max-w-md w-full p-6">
+            <h3 class="text-xl font-bold mb-4">Installer CustomShirt</h3>
+            ${instructions}
+            <button onclick="this.closest('.fixed').remove()" class="mt-6 w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700">
+                Compris
+            </button>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+// Show install success notification
+function showInstallSuccess() {
+    const notification = document.createElement('div');
+    notification.className = 'fixed top-4 right-4 bg-green-600 text-white px-6 py-4 rounded-lg shadow-lg z-50 flex items-center';
+    notification.innerHTML = `
+        <i class="fas fa-check-circle mr-3 text-xl"></i>
+        <div>
+            <strong>Installation réussie !</strong>
+            <p class="text-sm">CustomShirt est maintenant installé</p>
+        </div>
+    `;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.transition = 'opacity 0.5s';
+        notification.style.opacity = '0';
+        setTimeout(() => notification.remove(), 500);
+    }, 3000);
+}
+
+// Check if app is already installed
+window.addEventListener('appinstalled', () => {
+    console.log('PWA was installed');
+    if (installButton) {
+        installButton.remove();
+        installButton = null;
+    }
+    // Hide header button
+    const headerInstallBtn = document.getElementById('installPWA');
+    if (headerInstallBtn) {
+        headerInstallBtn.classList.add('hidden');
+    }
+    showInstallSuccess();
+});
+
+// Also check if PWA is already installed on page load
+window.addEventListener('load', () => {
+    // Check if running as standalone PWA
+    if (window.matchMedia('(display-mode: standalone)').matches || 
+        window.navigator.standalone === true) {
+        console.log('App is running as standalone PWA');
+        // Hide install buttons if already installed
+        const headerInstallBtn = document.getElementById('installPWA');
+        if (headerInstallBtn) {
+            headerInstallBtn.classList.add('hidden');
+        }
+    }
+});

@@ -16,6 +16,9 @@ class CustomShirtApp {
         this.loadProducts();
         this.updateCartCount();
         this.initCanvas();
+        this.setupImageUpload();
+        this.setupColorPicker();
+        this.setupFontSize();
     }
 
     setupEventListeners() {
@@ -58,29 +61,97 @@ class CustomShirtApp {
         this.setupTouchEvents();
     }
 
-    setupTouchEvents() {
-        // Add swipe gestures for mobile
-        let touchStartX = 0;
-        let touchEndX = 0;
-
-        document.addEventListener('touchstart', (e) => {
-            touchStartX = e.changedTouches[0].screenX;
+    setupImageUpload() {
+        const imageUpload = document.getElementById('imageUpload');
+        const uploadArea = imageUpload.parentElement;
+        
+        // Handle file selection
+        imageUpload.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file && file.type.startsWith('image/')) {
+                this.handleImageUpload(file);
+            }
         });
-
-        document.addEventListener('touchend', (e) => {
-            touchEndX = e.changedTouches[0].screenX;
-            this.handleSwipe(touchStartX, touchEndX);
+        
+        // Handle drag and drop
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('border-indigo-500', 'bg-indigo-50');
+        });
+        
+        uploadArea.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('border-indigo-500', 'bg-indigo-50');
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('border-indigo-500', 'bg-indigo-50');
+            
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith('image/')) {
+                this.handleImageUpload(file);
+            }
         });
     }
 
-    handleSwipe(startX, endX) {
-        const swipeThreshold = 50;
-        const diff = startX - endX;
+    setupColorPicker() {
+        const colorPicker = document.getElementById('colorPicker');
+        const colorHex = document.getElementById('colorHex');
+        
+        colorPicker.addEventListener('input', (e) => {
+            colorHex.textContent = e.target.value.toUpperCase();
+        });
+    }
 
-        if (Math.abs(diff) > swipeThreshold) {
-            // Swipe logic can be added here for mobile navigation
-            console.log('Swipe detected');
+    setupFontSize() {
+        const fontSize = document.getElementById('fontSize');
+        const fontSizeValue = document.getElementById('fontSizeValue');
+        
+        fontSize.addEventListener('input', (e) => {
+            fontSizeValue.textContent = e.target.value;
+        });
+    }
+
+    handleImageUpload(file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const img = new Image();
+            img.onload = () => {
+                this.drawImageOnCanvas(img);
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+
+    drawImageOnCanvas(img) {
+        // Calculate dimensions to fit on shirt
+        const maxWidth = 120;
+        const maxHeight = 120;
+        let width = img.width;
+        let height = img.height;
+        
+        // Scale image to fit
+        if (width > maxWidth || height > maxHeight) {
+            const ratio = Math.min(maxWidth / width, maxHeight / height);
+            width *= ratio;
+            height *= ratio;
         }
+        
+        // Center the image on the shirt
+        const x = (this.canvas.width - width) / 2;
+        const y = (this.canvas.height - height) / 2;
+        
+        this.ctx.drawImage(img, x, y, width, height);
+        this.showNotification('Image ajoutée avec succès!');
+    }
+
+    changeProduct() {
+        // Close designer and show product selection
+        this.closeDesigner();
+        document.getElementById('shop').scrollIntoView({ behavior: 'smooth' });
+        this.showNotification('Sélectionnez un nouveau produit à personnaliser');
     }
 
     initCanvas() {
@@ -234,6 +305,31 @@ class CustomShirtApp {
         this.openDesigner();
     }
 
+    setupTouchEvents() {
+        // Add swipe gestures for mobile
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        document.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+        });
+
+        document.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            this.handleSwipe(touchStartX, touchEndX);
+        });
+    }
+
+    handleSwipe(startX, endX) {
+        const swipeThreshold = 50;
+        const diff = startX - endX;
+
+        if (Math.abs(diff) > swipeThreshold) {
+            // Swipe logic can be added here for mobile navigation
+            console.log('Swipe detected');
+        }
+    }
+
     openDesigner() {
         document.getElementById('designerModal').classList.remove('hidden');
         document.body.style.overflow = 'hidden';
@@ -241,16 +337,12 @@ class CustomShirtApp {
         // Update designer with current product info
         if (this.currentProductName) {
             document.getElementById('designerProductName').textContent = `Personnalisation: ${this.currentProductName}`;
+            document.getElementById('selectedProduct').textContent = this.currentProductName;
             document.getElementById('basePrice').textContent = `${this.currentProductPrice.toFixed(2)}€`;
             document.getElementById('totalPrice').textContent = `${(this.currentProductPrice + 5).toFixed(2)}€`;
         }
         
         this.clearCanvas();
-    }
-
-    closeDesigner() {
-        document.getElementById('designerModal').classList.add('hidden');
-        document.body.style.overflow = 'auto';
     }
 
     addTextToCanvas() {
@@ -263,7 +355,7 @@ class CustomShirtApp {
             return;
         }
 
-        // Ensure text is visible on the shirt
+        // Ensure text is visible on shirt
         const adjustedColor = this.isColorTooSimilar(color, this.currentShirtColor) ? 
             (this.currentShirtColor === 'black' || this.currentShirtColor === 'blue' ? '#ffffff' : '#000000') : color;
 
@@ -274,8 +366,7 @@ class CustomShirtApp {
 
         document.getElementById('textInput').value = '';
     }
-
-    isColorTooSimilar(color1, color2) {
+isColorTooSimilar(color1, color2) {
         // Simple color contrast check
         const colors = {
             'black': '#000000',
@@ -442,11 +533,6 @@ function scrollToShop() {
 let app;
 document.addEventListener('DOMContentLoaded', () => {
     app = new CustomShirtApp();
-});
-
-// Handle responsive behavior
-window.addEventListener('resize', () => {
-    // Add any responsive logic here
 });
 
 // PWA Support and Install Prompt

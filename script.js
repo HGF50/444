@@ -1,4 +1,6 @@
-// Mobile-First JavaScript for CustomShirt
+// API Configuration
+const API_BASE_URL = window.location.origin + '/api';
+
 class CustomShirtApp {
     constructor() {
         this.cart = [];
@@ -219,7 +221,19 @@ class CustomShirtApp {
         ctx.stroke();
     }
 
-    loadProducts() {
+    async loadProducts() {
+        try {
+            const response = await fetch(`${API_BASE_URL}/products`);
+            const products = await response.json();
+            this.renderProducts(products);
+        } catch (error) {
+            console.error('Erreur lors du chargement des produits:', error);
+            // Fallback vers les données locales
+            this.loadProductsFallback();
+        }
+    }
+
+    loadProductsFallback() {
         const products = [
             { id: 1, name: 'T-shirt Classic', price: 19.99, category: 'tshirts', image: 'https://picsum.photos/seed/tshirt1/300/300', customizable: true },
             { id: 2, name: 'T-shirt Premium', price: 24.99, category: 'tshirts', image: 'https://picsum.photos/seed/tshirt2/300/300', customizable: true },
@@ -230,7 +244,6 @@ class CustomShirtApp {
             { id: 7, name: 'T-shirt Sport', price: 22.99, category: 'tshirts', image: 'https://picsum.photos/seed/tshirt3/300/300', customizable: true },
             { id: 8, name: 'Sweat Oversize', price: 49.99, category: 'hoodies', image: 'https://picsum.photos/seed/hoodie3/300/300', customizable: true }
         ];
-
         this.renderProducts(products);
     }
 
@@ -283,7 +296,46 @@ class CustomShirtApp {
         this.renderProducts(filtered);
     }
 
-    addToCartFromProduct(productId, name, price) {
+    async addToCartFromProduct(productId, name, price) {
+        try {
+            const response = await fetch(`${API_BASE_URL}/cart`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    userId: 'anonymous',
+                    items: [{
+                        productId,
+                        name,
+                        price,
+                        quantity: 1,
+                        custom: false
+                    }]
+                })
+            });
+            
+            const result = await response.json();
+            if (result.success) {
+                this.cart.push({
+                    id: Date.now(),
+                    productId,
+                    name,
+                    price,
+                    quantity: 1,
+                    custom: false
+                });
+                this.updateCartCount();
+                this.showNotification('Produit ajouté au panier!');
+            }
+        } catch (error) {
+            console.error('Erreur ajout panier:', error);
+            // Fallback local
+            this.addToCartFallback(productId, name, price);
+        }
+    }
+
+    addToCartFallback(productId, name, price) {
         const item = {
             id: Date.now(),
             productId,

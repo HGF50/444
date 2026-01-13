@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CustomShirt - Créez et Vendez vos Vêtements Personnalisés</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4f46e5">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="CustomShirt">
+    <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgdmlld0JveD0iMCAwIDE5MiAxOTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxOTIiIGhlaWdodD0iMTkyIiByeD0iMjQiIGZpbGw9IiM0ZjQ2ZTUiLz4KPHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeD0iNDYiIHk9IjQ2Ij4KPHBhdGggZD0iTTIwIDMwSDgwVjcwSDIwVjMwWiIgZmlsbD0id2hpdGUiLz4KPHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4PSI0MCIgeT0iMzAiPgo8dGV4dCB4PSIyMCIgeT0iMjUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxOCIgZmlsbD0iIzRmNDZlNSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+VDwvdGV4dD4KPC9zdmc+Cjwvc3ZnPgo8L3N2Zz4K">
+</head>
+<body class="bg-gray-50">
+    <!-- Header Mobile-First -->
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo -->
+                <div class="flex items-center">
+                    <button id="mobileMenuBtn" class="lg:hidden p-2 rounded-md text-gray-600 hover:text-gray-900">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                    <div class="ml-2 lg:ml-0">
+                        <h1 class="text-xl font-bold text-indigo-600">CustomShirt</h1>
+                    </div>
+                </div>
+
+                <!-- Desktop Navigation -->
+                <nav class="hidden lg:flex items-center space-x-8">
+                    <a href="#create" class="text-gray-700 hover:text-indigo-600 font-medium transition">Créer</a>
+                    <a href="#shop" class="text-gray-700 hover:text-indigo-600 font-medium transition">Boutique</a>
+                    <a href="#pro" class="text-gray-700 hover:text-indigo-600 font-medium transition">Professionnel</a>
+                </nav>
+
+                <!-- Actions -->
+                <div class="flex items-center space-x-4">
+                    <button class="p-2 text-gray-600 hover:text-indigo-600">
+                        <i class="fas fa-search text-lg"></i>
+                    </button>
+                    <button class="p-2 text-gray-600 hover:text-indigo-600">
+                        <i class="fas fa-user text-lg"></i>
+                    </button>
+                    <button class="relative p-2 text-gray-600 hover:text-indigo-600">
+                        <i class="fas fa-shopping-cart text-lg"></i>
+                        <span id="cartCount" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">0</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Menu -->
+        <div id="mobileMenu" class="hidden lg:hidden bg-white border-t">
+            <div class="px-4 py-3 space-y-3">
+                <a href="#create" class="block py-2 text-gray-700 hover:text-indigo-600 font-medium">Créer</a>
+                <a href="#shop" class="block py-2 text-gray-700 hover:text-indigo-600 font-medium">Boutique</a>
+                <a href="#pro" class="block py-2 text-gray-700 hover:text-indigo-600 font-medium">Professionnel</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-12 lg:py-20">
+        <div class="container mx-auto px-4">
+            <div class="text-center">
+                <h2 class="text-3xl lg:text-5xl font-bold mb-4">Créez vos Vêtements Personnalisés</h2>
+                <p class="text-lg lg:text-xl mb-8 text-indigo-100">Design unique, qualité exceptionnelle</p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <button onclick="openDesigner()" class="bg-white text-indigo-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition">
+                        <i class="fas fa-paint-brush mr-2"></i>Commencer à Créer
+                    </button>
+                    <button onclick="scrollToShop()" class="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-indigo-600 transition">
+                        <i class="fas fa-shopping-bag mr-2"></i>Explorer la Boutique
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="py-12 lg:py-16">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="text-center">
+                    <div class="bg-indigo-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-tshirt text-indigo-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-2">Qualité Premium</h3>
+                    <p class="text-gray-600">Tissus de haute qualité et impression durable</p>
+                </div>
+                <div class="text-center">
+                    <div class="bg-purple-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-truck text-purple-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-2">Livraison Rapide</h3>
+                    <p class="text-gray-600">Expédition sous 48h dans toute la France</p>
+                </div>
+                <div class="text-center">
+                    <div class="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-palette text-green-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-2">Design Illimité</h3>
+                    <p class="text-gray-600">Personnalisez avec vos propres designs</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Shop Section -->
+    <section id="shop" class="py-12 lg:py-16 bg-white">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center mb-12">Notre Collection</h2>
+            
+            <!-- Product Filters -->
+            <div class="flex flex-wrap justify-center gap-2 mb-8">
+                <button class="filter-btn active px-4 py-2 rounded-full bg-indigo-600 text-white" data-category="all">Tout</button>
+                <button class="filter-btn px-4 py-2 rounded-full bg-gray-200 text-gray-700 hover:bg-gray-300" data-category="tshirts">T-shirts</button>
+                <button class="filter-btn px-4 py-2 rounded-full bg-gray-200 text-gray-700 hover:bg-gray-300" data-category="hoodies">Sweats</button>
+                <button class="filter-btn px-4 py-2 rounded-full bg-gray-200 text-gray-700 hover:bg-gray-300" data-category="accessories">Accessoires</button>
+            </div>
+
+            <!-- Products Grid -->
+            <div id="productsGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                <!-- Products will be loaded here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Designer Modal -->
+    <div id="designerModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+                <div class="sticky top-0 bg-white border-b p-4 flex justify-between items-center">
+                    <h3 class="text-xl font-bold">Créateur de Design</h3>
+                    <button onclick="closeDesigner()" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+                
+                <div class="p-4">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <!-- Canvas Area -->
+                        <div class="bg-gray-100 rounded-lg p-4">
+                            <div class="bg-white rounded-lg shadow-lg mx-auto" style="width: 280px; height: 320px;">
+                                <canvas id="designCanvas" width="280" height="320"></canvas>
+                            </div>
+                        </div>
+                        
+                        <!-- Controls -->
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Texte</label>
+                                <input type="text" id="textInput" class="w-full px-3 py-2 border rounded-lg" placeholder="Ajoutez votre texte">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Couleur</label>
+                                <input type="color" id="colorPicker" class="w-full h-10 rounded-lg">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Taille du texte</label>
+                                <input type="range" id="fontSize" min="12" max="48" value="24" class="w-full">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Couleur du vêtement</label>
+                                <div class="flex gap-2">
+                                    <button class="w-8 h-8 rounded-full bg-white border-2 border-gray-300" onclick="setShirtColor('white')"></button>
+                                    <button class="w-8 h-8 rounded-full bg-black" onclick="setShirtColor('black')"></button>
+                                    <button class="w-8 h-8 rounded-full bg-red-500" onclick="setShirtColor('red')"></button>
+                                    <button class="w-8 h-8 rounded-full bg-blue-500" onclick="setShirtColor('blue')"></button>
+                                    <button class="w-8 h-8 rounded-full bg-green-500" onclick="setShirtColor('green')"></button>
+                                </div>
+                            </div>
+                            
+                            <div class="flex gap-3">
+                                <button onclick="addTextToCanvas()" class="flex-1 bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700">
+                                    <i class="fas fa-plus mr-2"></i>Ajouter Texte
+                                </button>
+                                <button onclick="clearCanvas()" class="flex-1 bg-gray-500 text-white py-2 rounded-lg hover:bg-gray-600">
+                                    <i class="fas fa-eraser mr-2"></i>Effacer
+                                </button>
+                            </div>
+                            
+                            <button onclick="addToCart()" class="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 font-semibold">
+                                <i class="fas fa-shopping-cart mr-2"></i>Ajouter au Panier
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <h4 class="text-xl font-bold mb-4">CustomShirt</h4>
+                    <p class="text-gray-400">Votre plateforme de création de vêtements personnalisés</p>
+                </div>
+                <div>
+                    <h5 class="font-semibold mb-3">Produits</h5>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#" class="hover:text-white">T-shirts</a></li>
+                        <li><a href="#" class="hover:text-white">Sweats</a></li>
+                        <li><a href="#" class="hover:text-white">Accessoires</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h5 class="font-semibold mb-3">Services</h5>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#" class="hover:text-white">Créer</a></li>
+                        <li><a href="#" class="hover:text-white">Boutique</a></li>
+                        <li><a href="#" class="hover:text-white">Professionnel</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h5 class="font-semibold mb-3">Suivez-nous</h5>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-facebook text-xl"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-instagram text-xl"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-twitter text-xl"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
+                <p>&copy; 2024 CustomShirt. Tous droits réservés.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
